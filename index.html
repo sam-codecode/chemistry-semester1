@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Semester 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color :blueviolet;
+            background-image: url('chem.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            margin: 0;
+            overflow :scroll; 
+        }
+        .container, .chapter-content, .element-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: whitesmoke;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth transitions */
+        }
+
+        .container {
+            z-index: 1;
+            padding-top: 20px; /* Space from the top of the container */
+            padding-bottom: 40px; /* Space at the bottom for chapter buttons and author */
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .element-content, .chapter-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 2;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .element-content.show, .chapter-content.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .input-container {
+            margin-bottom: 40px; /* Space between input box and chapter buttons */
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px; /* Space between input and buttons */
+        }
+
+        .button-style, .back-button, .return-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2); /* semi-transparent white */
+            border: 2px solid whitesmoke;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Added box-shadow transition */
+            margin: 0 5px; /* Space between buttons */
+        }
+
+        .button-style:hover, .back-button:hover, .return-button:hover {
+            background-color: whitesmoke;
+            color: black;
+            transform: scale(1.05);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2); /* Add shadow on hover */
+        }
+
+        .back-button {
+            position: fixed; /* Fixed positioning to the viewport */
+            top: 20px; /* Space from the top */
+            right: 20px; /* Space from the right */
+            z-index: 3; /* Ensure it is above other content */
+            display: none;
+        }
+
+        .return-button {
+            position: fixed; /* Fixed positioning to the viewport */
+            top: 20px; /* Space from the top */
+            right: 60px; /* Space from the right */
+            z-index: 3; /* Ensure it is above other content */
+            display: none;
+        }
+
+        #author {
+            color: black;
+            margin-top: 20px; /* Space between content and author text */
+            opacity: 1;
+            transition: opacity 0.5s; /* Smooth transition for fading */
+        }
+
+        #author.hidden {
+            opacity: 0;
+        }
+
+        .chapter-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Wrap buttons to the next line if necessary */
+            justify-content: center;
+            gap: 20px; /* Space between buttons */
+            margin-bottom: 20px; /* Space below the buttons */
+           
+        }
+        .quiz-button{
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 20px; 
+            margin-bottom: 20px; 
+            
+        }
+        .question-button{
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 20px;
+            margin-bottom: 20px;
+            
+        }
+        
+        .notes-button, .lecture-button, .experiment-button {    
+                 
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: red; /* Red color for buttons */
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Added box-shadow transition */
+            margin: 20px; /* Space between each button */
+            align-self: normal;
+            
+            
+        }
+
+        .notes-button:hover, .lecture-button:hover, .experiment-button:hover {
+            background-color: rgb(198, 85, 85);
+            transform: scale(1.05);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2); /* Add shadow on hover */
+        }
+
+        /* Keyframe animations for more dynamic transitions */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7); /* Dark overlay background */
+            backdrop-filter: blur(5px); /* Blur effect */
+            display: none;
+            z-index: 1; /* Ensure it is below other content */
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .overlay.show {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="container" id="mainContent">
+        <h1 id="h1main" style="color: whitesmoke;">CHEMISTRY SEMESTER 1</h1>
+        <div class="input-container">
+            <input type="text" id="elementInput" placeholder="Enter element name...">
+            <button class="button-style" onclick="getElementInfo()">Get Info</button>
+        </div>
+        <div class="chapter-buttons">
+            <button class="button-style" onclick="showChapterContent(1, 'c1.pdf','https://www.youtube.com/watch?v=D0bVognAdyc&list=PLg95bsazufL9J-TBi6qjFNneINTA1Os6x','https://youtu.be/IWI2uPDJDfk?si=87RBHUf7bY-Ymer1')">Chapter 1</button>
+            <button class="button-style" onclick="showChapterContent(2, 'c2.pdf','https://www.youtube.com/watch?v=uHyyzscflOE&list=PLg95bsazufL-kc6HCfOWphduvpxRxzkmC','https://youtu.be/yIb7HIS3B3c?si=PA1kHNDGna8t1e86')">Chapter 2</button>
+        
+            <button class="button-style" onclick="showChapterContent(3, 'c3.pdf','https://www.youtube.com/watch?v=tkdEuw0qtrk&list=PLg95bsazufL8S3Gb1yB3Yz7gcUSKzJeCP','https://youtu.be/MI5BZiiqUQE?si=_5VOIMsSVaaUNc5j')">Chapter 3</button>
+            <button class="button-style" onclick="showChapterContent(4, 'c4.pdf','https://www.youtube.com/watch?v=RBjcmn-5nKc&list=PLg95bsazufL_XVVudKDZtOYgt-VYUdXEG','https://youtu.be/QU8Qao50N_U?si=SNQ707CiG-9asSl0')">Chapter 4</button>
+
+            <button class="button-style" onclick="showChapterContent(5, 'c5.pdf','https://www.youtube.com/watch?v=aWw48KC6FCc&list=PLg95bsazufL_Ozd6RsTpREYmSzKJMPn1H','https://youtu.be/6KDbNuTgi84?si=jP33EuY-1q_q_r-5')">Chapter 5</button>
+            <button class="button-style" onclick="showChapterContent(6, 'c6.pdf','https://www.youtube.com/watch?v=r-4BmJUgCaw&list=PLg95bsazufL9FdDfk777zRxn0rXrc7y4X','https://youtu.be/ZOcftHsbSFQ?si=pDBdZ31PjjYkADIA')">Chapter 6</button>
+            <button class="button-style" onclick="showChapterContent(7, 'c7.pdf','https://www.youtube.com/watch?v=T7yv0t78bKY&list=PLg95bsazufL8eP-pPR4Pu4cbUZcXOTifP')">Chapter 7</button>
+        </div>
+        <div class="quiz-button">
+            <button class="button-style" onclick="directToQuiz('https://quizizz.com/embed/quiz/669e6df779f5b5d770967fe4')">Enhancement Quiz</button>
+            <button class="button-style" onclick="directToQuestions('https://drive.google.com/drive/folders/1zbRqQ-QBOpecgqEp3UCJ5UYjra0e5-HO?usp=sharing')">Enhancement Q/A</button>
+        </div>
+
+        <h3 id="author">BY: SAMUEL RAJ (PAL LEADER CHEMISTRY 2023/2024)</h3>
+    </div>
+    <div id="chapterContent" class="chapter-content">
+        <button class="notes-button" onclick="openPdf('c1.pdf')">Chapter Notes</button> 
+        <button class="lecture-button" onclick="showLectureVideos()">Lecture Videos</button>
+        <button class="experiment-button" onclick="showExperimentVideos()">Experiment Videos</button>
+    </div>
+    <div id="elementContent" class="element-content">
+        <!-- Element content will be dynamically inserted here -->
+    </div>
+    <button id="backButton" class="back-button" onclick="showMainContent()">Back</button>
+    <button id="returnButton" class="return-button" onclick="showMainContent()">Back</button>
+    <script>
+        const elements ={
+            hydrogen: {
+            symbol: "H",
+            atomicNumber: 1,
+            atomicMass: 1.008,
+            density: 0.00008988,
+            meltingPoint: -259.16,
+            boilingPoint: -252.87,
+            
+        },
+        helium: {
+            symbol: "He",
+            atomicNumber: 2,
+            atomicMass: 4.0026,
+            density: 0.0001786,
+            meltingPoint: -272.20,
+            boilingPoint: -268.93,
+            
+        },
+        lithium: {
+            symbol: "Li",
+            atomicNumber: 3,
+            atomicMass: 6.94,
+            density: 0.534,
+            meltingPoint: 180.54,
+            boilingPoint: 1342,
+        },
+        beryllium: {
+            symbol: "Be",
+            atomicNumber: 4,
+            atomicMass: 9.0122,
+            density: 1.848,
+            meltingPoint: 1287,
+            boilingPoint: 2470,
+        },
+        boron: {
+            symbol: "B",
+            atomicNumber: 5,
+            atomicMass: 10.81,
+            density: 2.46,
+            meltingPoint: 2075,
+            boilingPoint: 4000,
+        },
+        carbon: {
+            symbol: "C",
+            atomicNumber: 6,
+            atomicMass: 12.01,
+            density: 2.267,
+            meltingPoint: 3550,
+            boilingPoint: 4027,
+        },
+        nitrogen: {
+            symbol: "N",
+            atomicNumber: 7,
+            atomicMass: 14.01,
+            density: 0.0012506,
+            meltingPoint: -210.00,
+            boilingPoint: -195.79,
+        },
+        oxygen: {
+            symbol: "O",
+            atomicNumber: 8,
+            atomicMass: 15.999,
+            density: 0.001429,
+            meltingPoint: -218.79,
+            boilingPoint: -182.96,
+        },
+        fluorine: {
+            symbol: "F",
+            atomicNumber: 9,
+            atomicMass: 18.998,
+            density: 0.001696,
+            meltingPoint: -219.67,
+            boilingPoint: -188.12,
+            imageUrl: "fluorine.jpg" // Add your image URL here
+        },
+        neon: {
+            symbol: "Ne",
+            atomicNumber: 10,
+            atomicMass: 20.180,
+            density: 0.0008999,
+            meltingPoint: -248.59,
+            boilingPoint: -246.08,
+            imageUrl: "neon.jpg" // Add your image URL here
+        },
+        sodium: {
+            symbol: "Na",
+            atomicNumber: 11,
+            atomicMass: 22.99,
+            density: 0.968,
+            meltingPoint: 97.72,
+            boilingPoint: 883,
+            imageUrl: "sodium.jpg" // Add your image URL here
+        },
+        magnesium: {
+            symbol: "Mg",
+            atomicNumber: 12,
+            atomicMass: 24.305,
+            density: 1.738,
+            meltingPoint: 650,
+            boilingPoint: 1090,
+            imageUrl: "magnesium.jpg" // Add your image URL here
+        },
+        aluminum: {
+            symbol: "Al",
+            atomicNumber: 13,
+            atomicMass: 26.982,
+            density: 2.70,
+            meltingPoint: 660.3,
+            boilingPoint: 2519,
+            imageUrl: "aluminum.jpg" // Add your image URL here
+        },
+        silicon: {
+            symbol: "Si",
+            atomicNumber: 14,
+            atomicMass: 28.085,
+            density: 2.329,
+            meltingPoint: 1414,
+            boilingPoint: 2900,
+            imageUrl: "silicon.jpg" // Add your image URL here
+        },
+        phosphorus: {
+            symbol: "P",
+            atomicNumber: 15,
+            atomicMass: 30.974,
+            density: 1.82,
+            meltingPoint: 44.15,
+            boilingPoint: 280,
+            imageUrl: "phosphorus.jpg" // Add your image URL here
+        },
+        sulfur: {
+            symbol: "S",
+            atomicNumber: 16,
+            atomicMass: 32.06,
+            density: 2.07,
+            meltingPoint: 115.21,
+            boilingPoint: 444.72,
+            imageUrl: "sulfur.jpg" // Add your image URL here
+        },
+        chlorine: {
+            symbol: "Cl",
+            atomicNumber: 17,
+            atomicMass: 35.45,
+            density: 0.003214,
+            meltingPoint: -101.5,
+            boilingPoint: -34.04,
+            imageUrl: "chlorine.jpg" // Add your image URL here
+        },
+        argon: {
+            symbol: "Ar",
+            atomicNumber: 18,
+            atomicMass: 39.948,
+            density: 0.001782,
+            meltingPoint: -189.34,
+            boilingPoint: -185.85,
+            imageUrl: "argon.jpg" // Add your image URL here
+        },
+        potassium: {
+            symbol: "K",
+            atomicNumber: 19,
+            atomicMass: 39.10,
+            density: 0.856,
+            meltingPoint: 63.5,
+            boilingPoint: 759,
+            imageUrl: "potassium.jpg" // Add your image URL here
+        },
+        calcium: {
+            symbol: "Ca",
+            atomicNumber: 20,
+            atomicMass: 40.078,
+            density: 1.54,
+            meltingPoint: 842,
+            boilingPoint: 1484,
+            imageUrl: "calcium.jpg" // Add your image URL here
+        },
+        scandium: {
+            symbol: "Sc",
+            atomicNumber: 21,
+            atomicMass: 44.956,
+            density: 2.989,
+            meltingPoint: 1541,
+            boilingPoint: 2836,
+            imageUrl: "scandium.jpg" // Add your image URL here
+        },
+        titanium: {
+            symbol: "Ti",
+            atomicNumber: 22,
+            atomicMass: 47.867,
+            density: 4.54,
+            meltingPoint: 1885,
+            boilingPoint: 3287,
+            imageUrl: "titanium.jpg" // Add your image URL here
+        },
+        vanadium: {
+            symbol: "V",
+            atomicNumber: 23,
+            atomicMass: 50.942,
+            density: 6.11,
+            meltingPoint: 1910,
+            boilingPoint: 3407,
+            imageUrl: "vanadium.jpg" // Add your image URL here
+        },
+        chromium: {
+            symbol: "Cr",
+            atomicNumber: 24,
+            atomicMass: 51.996,
+            density: 7.14,
+            meltingPoint: 1907,
+            boilingPoint: 2671,
+            imageUrl: "chromium.jpg" // Add your image URL here
+        },
+        manganese: {
+            symbol: "Mn",
+            atomicNumber: 25,
+            atomicMass: 54.938,
+            density: 7.43,
+            meltingPoint: 1244,
+            boilingPoint: 2095,
+            imageUrl: "manganese.jpg" // Add your image URL here
+        },
+        ferum: {
+            symbol: "Fe",
+            atomicNumber: 26,
+            atomicMass: 55.845,
+            density: 7.87,
+            meltingPoint: 1538,
+            boilingPoint: 2862,
+            imageUrl: "iron.jpg" // Add your image URL here
+        },
+        cobalt: {
+            symbol: "Co",
+            atomicNumber: 27,
+            atomicMass: 58.933,
+            density: 8.90,
+            meltingPoint: 1495,
+            boilingPoint: 2927,
+            imageUrl: "cobalt.jpg" // Add your image URL here
+        },
+        nickel: {
+            symbol: "Ni",
+            atomicNumber: 28,
+            atomicMass: 58.933,
+            density: 8.91,
+            meltingPoint: 1455,
+            boilingPoint: 2913,
+            imageUrl: "nickel.jpg" // Add your image URL here
+        },
+        copper: {
+            symbol: "Cu",
+            atomicNumber: 29,
+            atomicMass: 63.546,
+            density: 8.96,
+            meltingPoint: 1084.62,
+            boilingPoint: 2562,
+            imageUrl: "copper.jpg" // Add your image URL here
+        },
+        zinc: {
+            symbol: "Zn",
+            atomicNumber: 30,
+            atomicMass: 65.38,
+            density: 7.14,
+            meltingPoint: 419.53,
+            boilingPoint: 907,
+            imageUrl: "zinc.jpg" // Add your image URL here
+        },
+        gallium: {
+            symbol: "Ga",
+            atomicNumber: 31,
+            atomicMass: 69.723,
+            density: 5.90,
+            meltingPoint: 29.76,
+            boilingPoint: 2204,
+            imageUrl: "gallium.jpg" // Add your image URL here
+        },
+        germanium: {
+            symbol: "Ge",
+            atomicNumber: 32,
+            atomicMass: 72.630,
+            density: 5.32,
+            meltingPoint: 938.25,
+            boilingPoint: 2833,
+            imageUrl: "germanium.jpg" // Add your image URL here
+        },
+        arsenic: {
+            symbol: "As",
+            atomicNumber: 33,
+            atomicMass: 74.922,
+            density: 5.72,
+            meltingPoint: 817,
+            boilingPoint: 613,
+            imageUrl: "arsenic.jpg" // Add your image URL here
+        },
+        selenium: {
+            symbol: "Se",
+            atomicNumber: 34,
+            atomicMass: 78.971,
+            density: 4.82,
+            meltingPoint: 221,
+            boilingPoint: 685,
+            imageUrl: "selenium.jpg" // Add your image URL here
+        },
+        bromine: {
+            symbol: "Br",
+            atomicNumber: 35,
+            atomicMass: 79.904,
+            density: 3.102,
+            meltingPoint: -7.2,
+            boilingPoint: 58.8,
+            imageUrl: "bromine.jpg" // Add your image URL here
+        },
+        krypton: {
+            symbol: "Kr",
+            atomicNumber: 36,
+            atomicMass: 83.798,
+            density: 0.003733,
+            meltingPoint: -157.37,
+            boilingPoint: -153.22,
+            imageUrl: "krypton.jpg" // Add your image URL here
+        },
+        rubidium: {
+            symbol: "Rb",
+            atomicNumber: 37,
+            atomicMass: 85.468,
+            density: 1.532,
+            meltingPoint: 39.31,
+            boilingPoint: 688,
+            imageUrl: "rubidium.jpg" // Add your image URL here
+        },
+        strontium: {
+            symbol: "Sr",
+            atomicNumber: 38,
+            atomicMass: 87.62,
+            density: 2.64,
+            meltingPoint: 777,
+            boilingPoint: 1382,
+            imageUrl: "strontium.jpg" // Add your image URL here
+        },
+        yttrium: {
+            symbol: "Y",
+            atomicNumber: 39,
+            atomicMass: 88.906,
+            density: 4.47,
+            meltingPoint: 1522,
+            boilingPoint: 3336,
+            imageUrl: "yttrium.jpg" // Add your image URL here
+        },
+        zirconium: {
+            symbol: "Zr",
+            atomicNumber: 40,
+            atomicMass: 91.224,
+            density: 6.52,
+            meltingPoint: 1855,
+            boilingPoint: 4409,
+            imageUrl: "zirconium.jpg" // Add your image URL here
+        },
+        niobium: {
+            symbol: "Nb",
+            atomicNumber: 41,
+            atomicMass: 92.906,
+            density: 8.57,
+            meltingPoint: 2477,
+            boilingPoint: 4744,
+            imageUrl: "niobium.jpg" // Add your image URL here
+        },
+        molybdenum: {
+            symbol: "Mo",
+            atomicNumber: 42,
+            atomicMass: 95.95,
+            density: 10.28,
+            meltingPoint: 2623,
+            boilingPoint: 4639,
+            imageUrl: "molybdenum.jpg" // Add your image URL here
+        },
+        technetium: {
+            symbol: "Tc",
+            atomicNumber: 43,
+            atomicMass: 98,
+            density: 9.07,
+            meltingPoint: 2157,
+            boilingPoint: 4265,
+            imageUrl: "technetium.jpg" // Add your image URL here
+        },
+        ruthenium: {
+            symbol: "Ru",
+            atomicNumber: 44,
+            atomicMass: 101.07,
+            density: 12.37,
+            meltingPoint: 2334,
+            boilingPoint: 4150,
+            imageUrl: "ruthenium.jpg" // Add your image URL here
+        },
+        rhodium: {
+            symbol: "Rh",
+            atomicNumber: 45,
+            atomicMass: 102.91,
+            density: 12.41,
+            meltingPoint: 1964,
+            boilingPoint: 3727,
+            imageUrl: "rhodium.jpg" // Add your image URL here
+        },
+        palladium: {
+            symbol: "Pd",
+            atomicNumber: 46,
+            atomicMass: 106.42,
+            density: 12.02,
+            meltingPoint: 1554,
+            boilingPoint: 2963,
+            imageUrl: "palladium.jpg" // Add your image URL here
+        },
+        argentum: {
+            symbol: "Ag",
+            atomicNumber: 47,
+            atomicMass: 107.87,
+            density: 10.49,
+            meltingPoint: 961.78,
+            boilingPoint: 2162,
+            imageUrl: "silver.jpg" // Add your image URL here
+        },
+        cadmium: {
+            symbol: "Cd",
+            atomicNumber: 48,
+            atomicMass: 112.41,
+            density: 8.65,
+            meltingPoint: 321.07,
+            boilingPoint: 767,
+            imageUrl: "cadmium.jpg" // Add your image URL here
+        },
+        indium: {
+            symbol: "In",
+            atomicNumber: 49,
+            atomicMass: 114.82,
+            density: 7.31,
+            meltingPoint: 156.60,
+            boilingPoint: 2072,
+            imageUrl: "indium.jpg" // Add your image URL here
+        },
+        stanum: {
+            symbol: "Sn",
+            atomicNumber: 50,
+            atomicMass: 118.71,
+            density: 7.31,
+            meltingPoint: 231.93,
+            boilingPoint: 2602,
+            imageUrl: "tin.jpg" // Add your image URL here
+        },
+        stibium: {
+            symbol: "Sb",
+            atomicNumber: 51,
+            atomicMass: 121.76,
+            density: 6.70,
+            meltingPoint: 631.61,
+            boilingPoint: 1587,
+            imageUrl: "antimony.jpg" // Add your image URL here
+        },
+        tellurium: {
+            symbol: "Te",
+            atomicNumber: 52,
+            atomicMass: 127.60,
+            density: 6.24,
+            meltingPoint: 449.85,
+            boilingPoint: 988,
+            imageUrl: "tellurium.jpg" // Add your image URL here
+        },
+        iodine: {
+            symbol: "I",
+            atomicNumber: 53,
+            atomicMass: 126.90,
+            density: 4.94,
+            meltingPoint: 113.7,
+            boilingPoint: 184.3,
+            imageUrl: "iodine.jpg" // Add your image URL here
+        },
+        xenon: {
+            symbol: "Xe",
+            atomicNumber: 54,
+            atomicMass: 131.29,
+            density: 0.005887,
+            meltingPoint: -111.75,
+            boilingPoint: -108.12,
+            imageUrl: "xenon.jpg" // Add your image URL here
+        },
+        cesium: {
+            symbol: "Cs",
+            atomicNumber: 55,
+            atomicMass: 132.91,
+            density: 1.93,
+            meltingPoint: 28.5,
+            boilingPoint: 671,
+            imageUrl: "cesium.jpg" // Add your image URL here
+        },
+        barium: {
+            symbol: "Ba",
+            atomicNumber: 56,
+            atomicMass: 137.33,
+            density: 3.62,
+            meltingPoint: 727,
+            boilingPoint: 1890,
+            imageUrl: "barium.jpg" // Add your image URL here
+        },
+        lanthanum: {
+            symbol: "La",
+            atomicNumber: 57,
+            atomicMass: 138.91,
+            density: 6.15,
+            meltingPoint: 920,
+            boilingPoint: 3464,
+            imageUrl: "lanthanum.jpg" // Add your image URL here
+        },
+        cerium: {
+            symbol: "Ce",
+            atomicNumber: 58,
+            atomicMass: 140.12,
+            density: 6.77,
+            meltingPoint: 798,
+            boilingPoint: 3257,
+            imageUrl: "cerium.jpg" // Add your image URL here
+        },
+        praseodymium: {
+            symbol: "Pr",
+            atomicNumber: 59,
+            atomicMass: 140.91,
+            density: 6.77,
+            meltingPoint: 931,
+            boilingPoint: 3520,
+            imageUrl: "praseodymium.jpg" // Add your image URL here
+        },
+        neodymium: {
+            symbol: "Nd",
+            atomicNumber: 60,
+            atomicMass: 144.24,
+            density: 7.01,
+            meltingPoint: 1021,
+            boilingPoint: 3014,
+            imageUrl: "neodymium.jpg" // Add your image URL here
+        },
+        promethium: {
+            symbol: "Pm",
+            atomicNumber: 61,
+            atomicMass: 145,
+            density: 7.26,
+            meltingPoint: 1160,
+            boilingPoint: 3000,
+            imageUrl: "promethium.jpg" // Add your image URL here
+        },
+        samarium: {
+            symbol: "Sm",
+            atomicNumber: 62,
+            atomicMass: 150.36,
+            density: 7.52,
+            meltingPoint: 1072,
+            boilingPoint: 1800,
+            imageUrl: "samarium.jpg" // Add your image URL here
+        },
+        europium: {
+            symbol: "Eu",
+            atomicNumber: 63,
+            atomicMass: 151.96,
+            density: 5.26,
+            meltingPoint: 822,
+            boilingPoint: 1527,
+            imageUrl: "europium.jpg" // Add your image URL here
+        },
+        gadolinium: {
+            symbol: "Gd",
+            atomicNumber: 64,
+            atomicMass: 157.25,
+            density: 7.90,
+            meltingPoint: 1312,
+            boilingPoint: 3266,
+            imageUrl: "gadolinium.jpg" // Add your image URL here
+        },
+        terbium: {
+            symbol: "Tb",
+            atomicNumber: 65,
+            atomicMass: 158.93,
+            density: 8.23,
+            meltingPoint: 1356,
+            boilingPoint: 3203,
+            imageUrl: "terbium.jpg" // Add your image URL here
+        },
+        dysprosium: {
+            symbol: "Dy",
+            atomicNumber: 66,
+            atomicMass: 162.50,
+            density: 8.54,
+            meltingPoint: 1412,
+            boilingPoint: 2562,
+            imageUrl: "dysprosium.jpg" // Add your image URL here
+        },
+        holmium: {
+            symbol: "Ho",
+            atomicNumber: 67,
+            atomicMass: 164.93,
+            density: 8.79,
+            meltingPoint: 1474,
+            boilingPoint: 2700,
+            imageUrl: "holmium.jpg" // Add your image URL here
+        },
+        erbium: {
+            symbol: "Er",
+            atomicNumber: 68,
+            atomicMass: 167.26,
+            density: 9.07,
+            meltingPoint: 1529,
+            boilingPoint: 2868,
+            imageUrl: "erbium.jpg" // Add your image URL here
+        },
+        thulium: {
+            symbol: "Tm",
+            atomicNumber: 69,
+            atomicMass: 168.93,
+            density: 9.32,
+            meltingPoint: 1545,
+            boilingPoint: 1629,
+            imageUrl: "thulium.jpg" // Add your image URL here
+        },
+        ytterbium: {
+            symbol: "Yb",
+            atomicNumber: 70,
+            atomicMass: 173.04,
+            density: 6.97,
+            meltingPoint: 819,
+            boilingPoint: 1196,
+            imageUrl: "ytterbium.jpg" // Add your image URL here
+        },
+        lutetium: {
+            symbol: "Lu",
+            atomicNumber: 71,
+            atomicMass: 174.97,
+            density: 9.84,
+            meltingPoint: 1663,
+            boilingPoint: 3300,
+            imageUrl: "lutetium.jpg" // Add your image URL here
+        },
+        hafnium: {
+            symbol: "Hf",
+            atomicNumber: 72,
+            atomicMass: 178.49,
+            density: 13.31,
+            meltingPoint: 2233,
+            boilingPoint: 4603,
+            imageUrl: "hafnium.jpg" // Add your image URL here
+        },
+        tantalum: {
+            symbol: "Ta",
+            atomicNumber: 73,
+            atomicMass: 180.95,
+            density: 16.69,
+            meltingPoint: 3017,
+            boilingPoint: 5458,
+            imageUrl: "tantalum.jpg" // Add your image URL here
+        },
+        tungsten: {
+            symbol: "W",
+            atomicNumber: 74,
+            atomicMass: 183.84,
+            density: 19.25,
+            meltingPoint: 3422,
+            boilingPoint: 5555,
+            imageUrl: "tungsten.jpg" // Add your image URL here
+        },
+        rhenium: {
+            symbol: "Re",
+            atomicNumber: 75,
+            atomicMass: 186.21,
+            density: 21.02,
+            meltingPoint: 3186,
+            boilingPoint: 5596,
+            imageUrl: "rhenium.jpg" // Add your image URL here
+        },
+        osmium: {
+            symbol: "Os",
+            atomicNumber: 76,
+            atomicMass: 190.23,
+            density: 22.59,
+            meltingPoint: 3033,
+            boilingPoint: 5027,
+            imageUrl: "osmium.jpg" // Add your image URL here
+        },
+        iridium: {
+            symbol: "Ir",
+            atomicNumber: 77,
+            atomicMass: 192.22,
+            density: 22.56,
+            meltingPoint: 2446,
+            boilingPoint: 4130,
+            imageUrl: "iridium.jpg" // Add your image URL here
+        },
+        platinum: {
+            symbol: "Pt",
+            atomicNumber: 78,
+            atomicMass: 195.08,
+            density: 21.45,
+            meltingPoint: 1768.3,
+            boilingPoint: 3825,
+            imageUrl: "platinum.jpg" // Add your image URL here
+        },
+        aurum: {
+            symbol: "Au",
+            atomicNumber: 79,
+            atomicMass: 196.97,
+            density: 19.32,
+            meltingPoint: 1064.18,
+            boilingPoint: 2970,
+            imageUrl: "gold.jpg" // Add your image URL here
+        },
+        mercury: {
+            symbol: "Hg",
+            atomicNumber: 80,
+            atomicMass: 200.59,
+            density: 13.534,
+            meltingPoint: -38.83,
+            boilingPoint: 356.73,
+            imageUrl: "mercury.jpg" // Add your image URL here
+        },
+        thallium: {
+            symbol: "Tl",
+            atomicNumber: 81,
+            atomicMass: 204.38,
+            density: 11.85,
+            meltingPoint: 304,
+            boilingPoint: 1457,
+            imageUrl: "thallium.jpg" // Add your image URL here
+        },
+        plumbum: {
+            symbol: "Pb",
+            atomicNumber: 82,
+            atomicMass: 207.2,
+            density: 11.34,
+            meltingPoint: 327.46,
+            boilingPoint: 1749,
+            imageUrl: "lead.jpg" // Add your image URL here
+        },
+        bismuth: {
+            symbol: "Bi",
+            atomicNumber: 83,
+            atomicMass: 208.98,
+            density: 9.78,
+            meltingPoint: 271.3,
+            boilingPoint: 1564,
+            imageUrl: "bismuth.jpg" // Add your image URL here
+        },
+        polonium: {
+            symbol: "Po",
+            atomicNumber: 84,
+            atomicMass: 209,
+            density: 9.17,
+            meltingPoint: 254,
+            boilingPoint: 962,
+            imageUrl: "polonium.jpg" // Add your image URL here
+        },
+        astatine: {
+            symbol: "At",
+            atomicNumber: 85,
+            atomicMass: 210,
+            density: 7.0,
+            meltingPoint: 302,
+            boilingPoint: 337,
+            imageUrl: "astatine.jpg" // Add your image URL here
+        },
+        radon: {
+            symbol: "Rn",
+            atomicNumber: 86,
+            atomicMass: 222,
+            density: 0.00973,
+            meltingPoint: -71,
+            boilingPoint: -61.7,
+            imageUrl: "radon.jpg" // Add your image URL here
+        },
+        francium: {
+            symbol: "Fr",
+            atomicNumber: 87,
+            atomicMass: 223,
+            density: 1.87,
+            meltingPoint: 27,
+            boilingPoint: 677,
+            imageUrl: "francium.jpg" // Add your image URL here
+        },
+        radium: {
+            symbol: "Ra",
+            atomicNumber: 88,
+            atomicMass: 226,
+            density: 5.5,
+            meltingPoint: 700,
+            boilingPoint: 1413,
+            imageUrl: "radium.jpg" // Add your image URL here
+        },
+        actinium: {
+            symbol: "Ac",
+            atomicNumber: 89,
+            atomicMass: 227,
+            density: 10.07,
+            meltingPoint: 1050,
+            boilingPoint: 1500,
+            imageUrl: "actinium.jpg" // Add your image URL here
+        },
+        thorium: {
+            symbol: "Th",
+            atomicNumber: 90,
+            atomicMass: 232.04,
+            density: 11.72,
+            meltingPoint: 1750,
+            boilingPoint: 4790,
+            imageUrl: "thorium.jpg" // Add your image URL here
+        },
+        protactinium: {
+            symbol: "Pa",
+            atomicNumber: 91,
+            atomicMass: 231.04,
+            density: 15.37,
+            meltingPoint: 1568,
+            boilingPoint: 4137,
+            imageUrl: "protactinium.jpg" // Add your image URL here
+        },
+        uranium: {
+            symbol: "U",
+            atomicNumber: 92,
+            atomicMass: 238.03,
+            density: 18.95,
+            meltingPoint: 1135,
+            boilingPoint: 4131,
+            imageUrl: "uranium.jpg" // Add your image URL here
+        },
+        neptunium: {
+            symbol: "Np",
+            atomicNumber: 93,
+            atomicMass: 237.048,
+            density: 20.45,
+            meltingPoint: 644,
+            boilingPoint: 4175,
+            imageUrl: "neptunium.jpg" // Add your image URL here
+        },
+        plutonium: {
+            symbol: "Pu",
+            atomicNumber: 94,
+            atomicMass: 244,
+            density: 19.86,
+            meltingPoint: 640,
+            boilingPoint: 3232,
+            imageUrl: "plutonium.jpg" // Add your image URL here
+        },
+        americium: {
+            symbol: "Am",
+            atomicNumber: 95,
+            atomicMass: 243,
+            density: 13.67,
+            meltingPoint: 1176,
+            boilingPoint: 2410,
+            imageUrl: "americium.jpg" // Add your image URL here
+        },
+        curium: {
+            symbol: "Cm",
+            atomicNumber: 96,
+            atomicMass: 247,
+            density: 13.51,
+            meltingPoint: 1340,
+            boilingPoint: 3110,
+            imageUrl: "curium.jpg" // Add your image URL here
+        },
+        berkelium: {
+            symbol: "Bk",
+            atomicNumber: 97,
+            atomicMass: 247,
+            density: 14.78,
+            meltingPoint: 986,
+            boilingPoint: 2930,
+            imageUrl: "berkelium.jpg" // Add your image URL here
+        },
+        californium: {
+            symbol: "Cf",
+            atomicNumber: 98,
+            atomicMass: 251,
+            density: 15.1,
+            meltingPoint: 900,
+            boilingPoint: 1470,
+            imageUrl: "californium.jpg" // Add your image URL here
+        },
+        einsteinium: {
+            symbol: "Es",
+            atomicNumber: 99,
+            atomicMass: 252,
+            density: 8.84,
+            meltingPoint: 860,
+            boilingPoint: 996,
+            imageUrl: "einsteinium.jpg" // Add your image URL here
+        },
+        fermium: {
+            symbol: "Fm",
+            atomicNumber: 100,
+            atomicMass: 257,
+            density: 9.7,
+            meltingPoint: 1527,
+            boilingPoint: 2600,
+            imageUrl: "fermium.jpg" // Add your image URL here
+        },
+        mendelevium: {
+            symbol: "Md",
+            atomicNumber: 101,
+            atomicMass: 258,
+            density: 10.3,
+            meltingPoint: 1100,
+            boilingPoint: 2200,
+            imageUrl: "mendelevium.jpg" // Add your image URL here
+        },
+        nobelium: {
+            symbol: "No",
+            atomicNumber: 102,
+            atomicMass: 259,
+            density: 9.9,
+            meltingPoint: 827,
+            boilingPoint: 1550,
+            imageUrl: "nobelium.jpg" // Add your image URL here
+        },
+        lawrencium: {
+            symbol: "Lr",
+            atomicNumber: 103,
+            atomicMass: 262,
+            density: 15.0,
+            meltingPoint: 1627,
+            boilingPoint: 3000,
+            imageUrl: "lawrencium.jpg" // Add your image URL here
+        },
+        rutherfordium: {
+            symbol: "Rf",
+            atomicNumber: 104,
+            atomicMass: 267,
+            density: 23.2,
+            meltingPoint: 2100,
+            boilingPoint: 5800,
+            imageUrl: "rutherfordium.jpg" // Add your image URL here
+        },
+        dubnium: {
+            symbol: "Db",
+            atomicNumber: 105,
+            atomicMass: 270,
+            density: 30.0,
+            meltingPoint: 2330,
+            boilingPoint: 5100,
+            imageUrl: "dubnium.jpg" // Add your image URL here
+        },
+        seaborgium: {
+            symbol: "Sg",
+            atomicNumber: 106,
+            atomicMass: 271,
+            density: 27.2,
+            meltingPoint: 2700,
+            boilingPoint: 5100,
+            imageUrl: "seaborgium.jpg" // Add your image URL here
+        },
+        bohrium: {
+            symbol: "Bh",
+            atomicNumber: 107,
+            atomicMass: 270,
+            density: 37.0,
+            meltingPoint: 2800,
+            boilingPoint: 5400,
+            imageUrl: "bohrium.jpg" // Add your image URL here
+        },
+        hassium: {
+            symbol: "Hs",
+            atomicNumber: 108,
+            atomicMass: 277,
+            density: 40.0,
+            meltingPoint: 2800,
+            boilingPoint: 5700,
+            imageUrl: "hassium.jpg" // Add your image URL here
+        },
+        meitnerium: {
+            symbol: "Mt",
+            atomicNumber: 109,
+            atomicMass: 278,
+            density: 38.0,
+            meltingPoint: 2900,
+            boilingPoint: 6000,
+            imageUrl: "meitnerium.jpg" // Add your image URL here
+        },
+        darmstadtium: {
+            symbol: "Ds",
+            atomicNumber: 110,
+            atomicMass: 281,
+            density: 32.0,
+            meltingPoint: 2700,
+            boilingPoint: 5000,
+            imageUrl: "darmstadtium.jpg" // Add your image URL here
+        },
+        roentgenium: {
+            symbol: "Rg",
+            atomicNumber: 111,
+            atomicMass: 282,
+            density: 27.0,
+            meltingPoint: 2800,
+            boilingPoint: 4400,
+            imageUrl: "roentgenium.jpg" // Add your image URL here
+        },
+        copernicium: {
+            symbol: "Cn",
+            atomicNumber: 112,
+            atomicMass: 285,
+            density: 20.0,
+            meltingPoint: 3000,
+            boilingPoint: 4000,
+            imageUrl: "copernicium.jpg" // Add your image URL here
+        },
+        nihonium: {
+            symbol: "Nh",
+            atomicNumber: 113,
+            atomicMass: 286,
+            density: 16.0,
+            meltingPoint: 1500,
+            boilingPoint: 2000,
+            imageUrl: "nihonium.jpg" // Add your image URL here
+        },
+        flerovium: {
+            symbol: "Fl",
+            atomicNumber: 114,
+            atomicMass: 289,
+            density: 14.0,
+            meltingPoint: 1000,
+            boilingPoint: 1500,
+            imageUrl: "flerovium.jpg" // Add your image URL here
+        },
+        moscovium: {
+            symbol: "Mc",
+            atomicNumber: 115,
+            atomicMass: 290,
+            density: 13.0,
+            meltingPoint: 800,
+            boilingPoint: 1000,
+            imageUrl: "moscovium.jpg" // Add your image URL here
+        },
+        livermorium: {
+            symbol: "Lv",
+            atomicNumber: 116,
+            atomicMass: 293,
+            density: 12.0,
+            meltingPoint: 600,
+            boilingPoint: 800,
+            imageUrl: "livermorium.jpg" // Add your image URL here
+        },
+        tennessine: {
+            symbol: "Ts",
+            atomicNumber: 117,
+            atomicMass: 294,
+            density: 7.0,
+            meltingPoint: 450,
+            boilingPoint: 500,
+            imageUrl: "tennessine.jpg" // Add your image URL here
+        },
+        oganesson: {
+            symbol: "Og",
+            atomicNumber: 118,
+            atomicMass: 294,
+            density: 5.0,
+            meltingPoint: 300,
+            boilingPoint: 500,
+            imageUrl: "oganesson.jpg" // Add your image URL here
+        }
+    };
+
+        function getElementInfo() {
+            const input = document.getElementById("elementInput").value.toLowerCase();
+            const element = elements[input];
+            const elementContentDiv = document.getElementById("elementContent");
+            const mainContentDiv = document.getElementById("mainContent");
+            const overlay = document.getElementById("overlay");
+            const backButton = document.getElementById("backButton");
+            const returnButton = document.getElementById("returnButton");
+            const authorText = document.getElementById("author");
+
+            if (element) {
+                const content = `
+                    <h2>${input.charAt(0).toUpperCase() + input.slice(1)}</h2>
+                    <p><strong>Symbol:</strong> ${element.symbol}</p>
+                    <p><strong>Atomic Number:</strong> ${element.atomicNumber}</p>
+                    <p><strong>Atomic Mass:</strong> ${element.atomicMass}</p>
+                    <p><strong>Density:</strong> ${element.density} g/cm³</p>
+                    <p><strong>Melting Point:</strong> ${element.meltingPoint} °C</p>
+                    <p><strong>Boiling Point:</strong> ${element.boilingPoint} °C</p>
+                   
+                `;
+                elementContentDiv.innerHTML = content;
+                mainContentDiv.style.display = 'none';//
+                overlay.classList.add('show');
+                mainContentDiv.style.animation = 'fadeOutDown 0.5s forwards';//
+                elementContentDiv.style.animation = 'fadeInUp 0.5s forwards';//
+                elementContentDiv.classList.add('show');
+                backButton.style.display = 'block';
+                returnButton.style.display = 'none';
+                authorText.classList.add('hidden');
+                document.getElementById("elementInput").value = '';
+                setTimeout(() => { mainContentDiv.style.opacity = '0'; }, 500);//
+            }
+            else {
+                elementContentDiv.innerHTML = "<p>Invalid Element Entered. Please try again.</p>";
+                overlay.classList.add('show');
+                mainContentDiv.style.animation = 'fadeOutDown 0.5s forwards';
+                elementContentDiv.style.animation = 'fadeInUp 0.5s forwards';
+                elementContentDiv.classList.add('show');
+                returnButton.style.display = 'inline-block';
+                backButton.style.display = 'none'; // Hide Back button
+                authorText.classList.add('hidden'); // Hide author text
+                setTimeout(() => { mainContentDiv.style.opacity = '0'; }, 500); // Hide main content after fade out
+            }
+        }
+        
+        
+
+            function showChapterContent(chapterNumber, pdfUrl,lectureLink,experimentLink) {
+            const mainContentDiv = document.getElementById("mainContent");
+            const chapterContentDiv = document.getElementById("chapterContent");
+            const backButton = document.getElementById("backButton");
+            const authorText = document.getElementById("author");
+            const overlay = document.getElementById("overlay");
+
+            mainContentDiv.style.display = 'none';//
+            chapterContentDiv.classList.add('show');
+            overlay.classList.add('show');
+            mainContentDiv.style.animation = 'fadeOutDown 0.5s forwards';
+            chapterContentDiv.style.animation = 'fadeInUp 0.5s forwards';
+            backButton.style.display = 'none';
+            returnButton.style.display = 'block';
+            authorText.classList.add('hidden');
+           
+            chapterContentDiv.innerHTML = `
+                <h2>Chapter ${chapterNumber}</h2>
+                <button class="notes-button" onclick="openPdf('${pdfUrl}')">Chapter ${chapterNumber} Notes</button>
+                <button class="lecture-button" onclick="openLectureVideo('${lectureLink}')">Lecture ${chapterNumber} Videos</button>
+                 <button class="experiment-button" onclick="openExperimentVideo('${experimentLink}')">Experiment ${chapterNumber} Video</button>
+            `;
+            showContent('chapterContent');
+        }
+
+        function showMainContent() {
+            const mainContentDiv = document.getElementById("mainContent");
+            const chapterContentDiv = document.getElementById("chapterContent");
+            const elementContentDiv = document.getElementById("elementContent");
+            const overlay = document.getElementById("overlay");
+            const backButton = document.getElementById("backButton");
+            const returnButton = document.getElementById("returnButton");
+            const authorText = document.getElementById("author");
+
+            chapterContentDiv.classList.remove('show');
+            elementContentDiv.classList.remove('show');
+            overlay.classList.remove('show');
+            mainContentDiv.style.display = 'flex';
+            mainContentDiv.style.animation = 'fadeInUp 0.5s forwards';
+            mainContentDiv.style.opacity = '1';
+            mainContentDiv.style.transform = 'scale(1)';
+            returnButton.style.display = 'none';
+            backButton.style.display = 'none';
+            authorText.classList.remove('hidden'); // Show author text
+            document.getElementById("elementInput").value = ''; // Clear input box
+        }
+        function directToQuiz(quizLink){
+            window.open(quizLink,'_blank');
+        }
+        function directToQuestions(questionLink){
+            window.open(questionLink,'_blank');
+        }
+
+        function openPdf(pdfUrl) {
+            window.open(pdfUrl, '_blank');
+        }
+
+        function openLectureVideo(lectureLink) {
+            window.open(lectureLink, '_blank');
+        }
+
+        function openExperimentVideo(experimentLink) {
+            window.open(experimentLink, '_blank');
+        }
+        document.getElementById("elementInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent the default action of the Enter key
+                getElementInfo(); // Trigger the function
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
